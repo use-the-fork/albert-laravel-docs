@@ -1,7 +1,7 @@
 """Search the Laravel Documentation"""
 from pathlib import Path
 
-from albert import QueryHandler, Item
+from albert import QueryHandler, Item, UrlAction
 
 import os
 import urllib.parse
@@ -92,12 +92,13 @@ class Plugin(QueryHandler):
                         subtitle = text
 
                     items.append(
-                        {
-                            'icon': ICON_PATH,
-                            'text': html.unescape(title),
-                            'subtext': html.unescape(subtitle if subtitle is not None else ""),
-                            'actions': [UrlAction("Open in the Laravel Documentation", url)],
-                        }
+                        Item(
+                            id=__prettyname__,
+                            icon=ICON_PATH,
+                            text=html.unescape(title),
+                            subtext=html.unescape(subtitle if subtitle is not None else ""),
+                            actions=[UrlAction("Open in the Laravel Documentation", url)],
+                        )
                     )
 
                 if len(items) == 0:
@@ -108,31 +109,34 @@ class Plugin(QueryHandler):
                     )
 
                     items.append(
-                        {
-                            'icon': GOOGLE_ICON_PATH,
-                            'text': "Search Google",
-                            'subtext': 'No match found. Search Google for: "{}"'.format(term),
-                            'actions': [UrlAction("No match found. Search Google", google)],
-                        }
+                        Item(
+                            id=__prettyname__,
+                            icon=GOOGLE_ICON_PATH,
+                            text="Search Google",
+                            subtext='No match found. Search Google for: "{}"'.format(term),
+                            actions=[UrlAction("No match found. Search Google", google)],
+                        )
                     )
 
                     items.append(
-                        {
-                            'icon': GOOGLE_ICON_PATH,
-                            'text': "Open Docs",
-                            'subtext': "No match found. Open laravel.com/docs...",
-                            'actions': [UrlAction("Open the Laravel Documentation", docs)],
-                        }
+                        Item(
+                            id=__prettyname__,
+                            icon=ICON_PATH,
+                            text="Open Docs",
+                            subtext="No match found. Open laravel.com/docs...",
+                            actions=[UrlAction("Open the Laravel Documentation", docs)],
+                        )
                     )
 
             else:
                 items.append(
-                    {
-                        'icon': GOOGLE_ICON_PATH,
-                        'text': "Open Docs",
-                        'subtext': "Open laravel.com/docs....",
-                        'actions': [UrlAction("Open the Laravel Documentation", docs)],
-                    }
+                    Item(
+                        id=__prettyname__,
+                        icon=ICON_PATH,
+                        text="Open Docs",
+                        subtext="Open laravel.com/docs...",
+                        actions=[UrlAction("Open the Laravel Documentation", docs)],
+                    )
                 )
 
         return items
