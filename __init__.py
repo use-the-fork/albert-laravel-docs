@@ -1,8 +1,11 @@
-"""Search the Laravel Documentation"""
+"""
+Search the Laravel Documentation
+"""
+
 from pathlib import Path
 
-from albert import QueryHandler, Item, UrlAction
-
+from albert import Action, Item, QueryHandler, openUrl, info, debug
+import json
 import os
 import urllib.parse
 import html
@@ -13,23 +16,22 @@ md_version = "0.4"
 md_id = __name__
 md_name = "Laravel Docs"
 md_description = "Albert extension for quickly and easily searching the Laravel documentation"
-#md_license = "BSD-2"
-#md_url = "https://url.com/to/upstream/sources/and/maybe/issues"
-#md_maintainers = "@preferrablyYourGithubName"
+# md_license = "BSD-2"
+md_url = "https://github.com/use-the-fork/albert-laravel-docs/issues"
+md_maintainers = "@use-the-fork"
 
 
-client = SearchClient.create("8BB87I11DE", "8e1d446d61fce359f69cd7c8b86a50de")
-index = client.init_index("docs")
+client = SearchClient.create("E3MIRNPJH5", "1fa3a8fec06eb1858d6ca137211225c0")
+index = client.init_index("laravel")
 
 # icon = "{}/icon.png".format(path.dirname(__file__))
 # google_icon = "{}/google.png".format(path.dirname(__file__))
 #
 
 GOOGLE_ICON_PATH = str(Path(__file__).parent / 'google.png')
-ICON_PATH = str(Path(__file__).parent / 'icon.png')
+ICON_PATH = "{}/icon.svg".format(os.path.dirname(__file__))
 
 docs = "https://laravel.com/docs/"
-
 
 
 class Plugin(QueryHandler):
@@ -43,100 +45,135 @@ class Plugin(QueryHandler):
         return md_description
 
     def defaultTrigger(self):
-        return "ld "
+        return "lv "
 
-    def initialize(self):
-        self.icon = [os.path.dirname(__file__) + "/icon.png"]
+    def getTitle(self, hierarchy):
+        if hierarchy["lvl6"] is not None:
+            return hierarchy["lvl6"]
 
-    def finalize(self):
-        info('finalize')
+        if hierarchy["lvl5"] is not None:
+            return hierarchy["lvl5"]
 
-    def getSubtitle(hit):
-        if hit["h4"] is not None:
-            return hit["h4"]
+        if hierarchy["lvl4"] is not None:
+            return hierarchy["lvl4"]
 
-        if hit["h3"] is not None:
-            return hit["h3"]
+        if hierarchy["lvl3"] is not None:
+            return hierarchy["lvl3"]
 
-        if hit["h2"] is not None:
-            return hit["h2"]
+        if hierarchy["lvl2"] is not None:
+            return hierarchy["lvl2"]
+
+        if hierarchy["lvl1"] is not None:
+            return hierarchy["lvl1"]
+
+        if hierarchy["lvl0"] is not None:
+            return hierarchy["lvl0"]
 
         return None
-    def handleTriggerQuery(self, query):
+
+    def getSubtitle(self, hierarchy):
+        if hierarchy["lvl6"] is not None:
+            return hierarchy["lvl5"]
+
+        if hierarchy["lvl5"] is not None:
+            return hierarchy["lvl4"]
+
+        if hierarchy["lvl4"] is not None:
+            return hierarchy["lvl3"]
+
+        if hierarchy["lvl3"] is not None:
+            return hierarchy["lvl2"]
+
+        if hierarchy["lvl2"] is not None:
+            return hierarchy["lvl1"]
+
+        if hierarchy["lvl1"] is not None:
+            return hierarchy["lvl0"]
+
+        return None
+
+    def handleQuery(self, query):
         items = []
 
-        if query.isTriggered:
+        if not query.isValid:
+            return
 
-            if not query.isValid:
-                return
+        if query.string.strip():
 
-            if query.string.strip():
-                search = index.search(
-                    query.string, {"tagFilters": "master", "hitsPerPage": 5}
-                )
+            search = index.search(
+                query.string, {"facetFilters": "version:10.x", "hitsPerPage": 5}
+            )
 
-                for hit in search["hits"]:
+            for hit in search["hits"]:
 
-                    title = hit["h1"]
-                    subtitle = self.getSubtitle(hit)
-                    url = "{}{}".format(docs, hit["link"])
+                title = self.getTitle(hit['hierarchy'])
+                subtitle = self.getSubtitle(hit['hierarchy'])
+                url = hit["url"]
 
-                    text = False
-                    try:
-                        text = hit["_highlightResult"]["content"]["value"]
-                    except KeyError:
-                        pass
+                text = False
+                try:
+                    text = hit["_highlightResult"]["content"]["value"]
+                except KeyError:
+                    pass
 
-                    if text and subtitle:
-                        title = "{} - {}".format(title, subtitle)
-                        subtitle = text
+                if text and subtitle:
+                    title = "{} - {}".format(title, subtitle)
+                    subtitle = text
 
-                    items.append(
-                        Item(
-                            id=__prettyname__,
-                            icon=ICON_PATH,
-                            text=html.unescape(title),
-                            subtext=html.unescape(subtitle if subtitle is not None else ""),
-                            actions=[UrlAction("Open in the Laravel Documentation", url)],
-                        )
-                    )
-
-                if len(items) == 0:
-                    term = "laravel {}".format(query.string)
-
-                    google = "https://www.google.com/search?q={}".format(
-                        urllib.parse.quote(term)
-                    )
-
-                    items.append(
-                        Item(
-                            id=__prettyname__,
-                            icon=GOOGLE_ICON_PATH,
-                            text="Search Google",
-                            subtext='No match found. Search Google for: "{}"'.format(term),
-                            actions=[UrlAction("No match found. Search Google", google)],
-                        )
-                    )
-
-                    items.append(
-                        Item(
-                            id=__prettyname__,
-                            icon=ICON_PATH,
-                            text="Open Docs",
-                            subtext="No match found. Open laravel.com/docs...",
-                            actions=[UrlAction("Open the Laravel Documentation", docs)],
-                        )
-                    )
-
-            else:
                 items.append(
                     Item(
-                        id=__prettyname__,
-                        icon=ICON_PATH,
-                        text="Open Docs",
-                        subtext="Open laravel.com/docs...",
-                        actions=[UrlAction("Open the Laravel Documentation", docs)],
+                        id=f'{md_name}/{hit["objectID"]}',
+                        icon=[ICON_PATH],
+                        text=html.unescape(title),
+                        subtext=html.unescape(subtitle if subtitle is not None else ""),
+                        actions=[
+                            Action(
+                                "Open",
+                                'Open in the Laravel Documentation',
+                                lambda u=url: openUrl(u)
+                            )
+                        ],
                     )
                 )
 
-        return items
+            if len(items) == 0:
+                term = "laravel {}".format(query.string)
+
+                google = "https://www.google.com/search?q={}".format(
+                    urllib.parse.quote(term)
+                )
+
+                items.append(
+                    Item(
+                        id=f'{md_name}/search_google',
+                        icon=[GOOGLE_ICON_PATH],
+                        text="Search Google",
+                        subtext='No match found. Search Google for: "{}"'.format(term),
+                        actions=[
+                            Action(
+                                "Open",
+                                'No match found. Search Google',
+                                lambda u=google: openUrl(u)
+                            )
+                        ],
+                    )
+                )
+
+                items.append(
+                    Item(
+                        id=f'{md_name}/open_laravel_docs',
+                        icon=[ICON_PATH],
+                        text="Open Laravel Docs",
+                        subtext="No match found. Open laravel.com/docs...",
+                        actions=[
+                            Action(
+                                "Open",
+                                'Open the Laravel Documentation',
+                                lambda u=docs: openUrl(u)
+                            )
+
+                        ],
+                    )
+                )
+
+        query.add(items)
