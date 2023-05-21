@@ -24,11 +24,7 @@ md_maintainers = "@use-the-fork"
 client = SearchClient.create("E3MIRNPJH5", "1fa3a8fec06eb1858d6ca137211225c0")
 index = client.init_index("laravel")
 
-# icon = "{}/icon.png".format(path.dirname(__file__))
-# google_icon = "{}/google.png".format(path.dirname(__file__))
-#
-
-GOOGLE_ICON_PATH = str(Path(__file__).parent / 'google.png')
+GOOGLE_ICON_PATH = "{}/google.svg".format(os.path.dirname(__file__))
 ICON_PATH = "{}/icon.svg".format(os.path.dirname(__file__))
 
 docs = "https://laravel.com/docs/"
