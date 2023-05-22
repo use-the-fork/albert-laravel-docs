@@ -9,6 +9,7 @@ import json
 import os
 import urllib.parse
 import html
+import re
 from algoliasearch.search_client import SearchClient
 
 md_iid = "0.5"
@@ -108,7 +109,8 @@ class Plugin(QueryHandler):
 
                 text = False
                 try:
-                    text = hit["_highlightResult"]["content"]["value"]
+                    #strip the hightlight tags from the result
+                    text = re.sub('<[^<]+?>', '', hit["_highlightResult"]["content"]["value"])
                 except KeyError:
                     pass
 
