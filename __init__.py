@@ -14,10 +14,11 @@ md_version = "0.4"
 md_id = __name__
 md_name = "Laravel"
 md_docs = "https://laravel.com/docs/"
-md_trigger = "lv"
 md_description = "Albert extension for quickly and easily searching the Laravel documentation"
 md_url = "https://github.com/use-the-fork/albert-laravel-docs/issues"
 md_maintainers = "@use-the-fork"
+md_trigger = "lv "
+
 
 client = SearchClient.create("E3MIRNPJH5", "1fa3a8fec06eb1858d6ca137211225c0")
 index = client.init_index("laravel")
@@ -37,7 +38,7 @@ class Plugin(QueryHandler):
         return md_description
 
     def defaultTrigger(self):
-        return '{} '.format(md_trigger),
+        return md_trigger
 
     def getTitle(self, hierarchy):
         if hierarchy["lvl6"] is not None:
@@ -130,7 +131,7 @@ class Plugin(QueryHandler):
                 )
 
             if len(items) == 0:
-                term = "{} {}".format(md_name.lower(), query.string)
+                term = "laravel {}".format(query.string)
 
                 google = "https://www.google.com/search?q={}".format(
                     urllib.parse.quote(term)
