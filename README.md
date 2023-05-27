@@ -3,7 +3,7 @@
 [Albert](https://github.com/albertlauncher/albert) extension for quickly and easily searching the Laravel documentation.
 
 
-![Screenshot](images/screenshot.png)
+![Screenshot](images/screenshot.gif)
 
 
 ## Requirements
@@ -27,5 +27,23 @@ lv <query>
 lv unit testing
 ```
 
+My Other Albert Plugins
+-------
+
+- [Laravel Docs Extension](https://github.com/use-the-fork/albert-laravel-docs)
+- [PEST Docs Extension](https://github.com/use-the-fork/albert-pest-docs)
+- [MUI Docs Extension](https://github.com/use-the-fork/albert-mui-docs)
+
+
+### For Windows Users WOX Plugins
+
+
+- [Laravel Docs Extension](https://github.com/use-the-fork/wox-laravel-docs)
+- [PEST Docs Extension](https://github.com/use-the-fork/wox-pest-docs)
+- [MUI Docs Extension](https://github.com/use-the-fork/wox-mui-docs)
+
+
+Support Me
+-------
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/usethefork)
