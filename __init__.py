@@ -5,8 +5,6 @@ Search the Laravel Documentation
 from albert import Action, Item, QueryHandler, openUrl, info, debug
 import os
 import urllib.parse
-import html
-import re
 from algoliasearch.search_client import SearchClient
 
 md_iid = "0.5"
@@ -17,7 +15,9 @@ md_docs = "https://laravel.com/docs/"
 md_description = "Albert extension for quickly and easily searching the Laravel documentation"
 md_url = "https://github.com/use-the-fork/albert-laravel-docs/issues"
 md_maintainers = "@use-the-fork"
+md_lib_dependencies = ["algoliasearch"]
 md_trigger = "lv "
+
 
 
 client = SearchClient.create("E3MIRNPJH5", "1fa3a8fec06eb1858d6ca137211225c0")
@@ -94,7 +94,7 @@ class Plugin(QueryHandler):
         if query.string.strip():
 
             search = index.search(
-                query.string, {"facetFilters": "version:10.x", "hitsPerPage": 5}
+                query.string, {"facetFilters": "version:10.x", "hitsPerPage": 5, "highlightPreTag": "...", "highlightPostTag": "..."}
             )
 
             for hit in search["hits"]:
@@ -105,8 +105,7 @@ class Plugin(QueryHandler):
 
                 text = False
                 try:
-                    #strip the hightlight tags from the result
-                    text = re.sub('<[^<]+?>', '', hit["_highlightResult"]["content"]["value"])
+                    text = hit["_highlightResult"]["content"]["value"]
                 except KeyError:
                     pass
 
@@ -118,8 +117,8 @@ class Plugin(QueryHandler):
                     Item(
                         id=f'{md_name}/{hit["objectID"]}',
                         icon=[ICON_PATH],
-                        text=html.unescape(title),
-                        subtext=html.unescape(subtitle if subtitle is not None else ""),
+                        text=title,
+                        subtext=subtitle if subtitle is not None else "",
                         actions=[
                             Action(
                                 "Open",
